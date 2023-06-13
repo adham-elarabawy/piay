@@ -15,3 +15,20 @@ Official Implementation of "Perturbation Is All You Need"
 ## Instructions for Reproducability
 ### Create the Dataset
 `python create_dataset.py --ds_request_size 10000 --prompt "beautiful islamic art, geometric, intricate, blue, shutterstock"`
+
+## Accelerate Config
+ - compute_environment: LOCAL_MACHINE
+ - distributed_type: 'NO'
+ - downcast_bf16: 'no'
+ - gpu_ids: '0'
+ - machine_rank: 0
+ - main_training_function: main
+ - mixed_precision: bf16
+ - num_machines: 1
+ - num_processes: 1
+ - rdzv_backend: static
+ - same_network: true
+ - tpu_env: []
+ - tpu_use_cluster: false
+ - tpu_use_sudo: false
+ - use_cpu: false
