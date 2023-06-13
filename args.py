@@ -1,8 +1,8 @@
+import argparse
+import os
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
-    parser.add_argument(
-        "--input_perturbation", type=float, default=0, help="The scale of input perturbation. Recommended 0.1."
-    )
     parser.add_argument(
         "--pretrained_model_name_or_path",
         type=str,
@@ -53,6 +53,24 @@ def parse_args():
         help="The column of the dataset containing a caption or a list of captions.",
     )
     parser.add_argument(
+        "--validation_prompt", type=str, default=None, help="A prompt that is sampled during training for inference."
+    )
+    parser.add_argument(
+        "--num_validation_images",
+        type=int,
+        default=4,
+        help="Number of images that should be generated during validation with `validation_prompt`.",
+    )
+    parser.add_argument(
+        "--validation_epochs",
+        type=int,
+        default=1,
+        help=(
+            "Run fine-tuning validation every X epochs. The validation process consists of running the prompt"
+            " `args.validation_prompt` multiple times: `args.num_validation_images`."
+        ),
+    )
+    parser.add_argument(
         "--max_train_samples",
         type=int,
         default=None,
@@ -62,16 +80,9 @@ def parse_args():
         ),
     )
     parser.add_argument(
-        "--validation_prompts",
-        type=str,
-        default=None,
-        nargs="+",
-        help=("A set of prompts evaluated every `--validation_epochs` and logged to `--report_to`."),
-    )
-    parser.add_argument(
         "--output_dir",
         type=str,
-        default="sd-model-finetuned",
+        default="sd-model-finetuned-lora",
         help="The output directory where the model predictions and checkpoints will be written.",
     )
     parser.add_argument(
@@ -167,17 +178,6 @@ def parse_args():
             " https://pytorch.org/docs/stable/notes/cuda.html#tensorfloat-32-tf32-on-ampere-devices"
         ),
     )
-    parser.add_argument("--use_ema", action="store_true", help="Whether to use EMA model.")
-    parser.add_argument(
-        "--non_ema_revision",
-        type=str,
-        default=None,
-        required=False,
-        help=(
-            "Revision of pretrained non-ema model identifier. Must be a branch, tag or git identifier of the local or"
-            " remote repository specified with --pretrained_model_name_or_path."
-        ),
-    )
     parser.add_argument(
         "--dataloader_num_workers",
         type=int,
@@ -267,21 +267,6 @@ def parse_args():
         "--enable_xformers_memory_efficient_attention", action="store_true", help="Whether or not to use xformers."
     )
     parser.add_argument("--noise_offset", type=float, default=0, help="The scale of noise offset.")
-    parser.add_argument(
-        "--validation_epochs",
-        type=int,
-        default=5,
-        help="Run validation every X epochs.",
-    )
-    parser.add_argument(
-        "--tracker_project_name",
-        type=str,
-        default="text2image-fine-tune",
-        help=(
-            "The `project_name` argument passed to Accelerator.init_trackers for"
-            " more information see https://huggingface.co/docs/accelerate/v0.17.0/en/package_reference/accelerator#accelerate.Accelerator"
-        ),
-    )
 
     args = parser.parse_args()
     env_local_rank = int(os.environ.get("LOCAL_RANK", -1))
@@ -291,9 +276,5 @@ def parse_args():
     # Sanity checks
     if args.dataset_name is None and args.train_data_dir is None:
         raise ValueError("Need either a dataset name or a training folder.")
-
-    # default to using the same revision for the non-ema model if not specified
-    if args.non_ema_revision is None:
-        args.non_ema_revision = args.revision
 
     return args
