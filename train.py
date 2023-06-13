@@ -31,7 +31,8 @@ from accelerate import Accelerator
 from accelerate.logging import get_logger
 from accelerate.utils import ProjectConfiguration, set_seed
 from datasets import load_dataset
-from huggingface_hub import create_repo, upload_folder
+from huggingface_hub import create_repo, upload_folder, create_branch
+from huggingface_hub.utils import HfHubHTTPError
 from packaging import version
 from torchvision import transforms
 from tqdm.auto import tqdm
@@ -136,6 +137,9 @@ def main():
             repo_id = create_repo(
                 repo_id=args.hub_model_id or Path(args.output_dir).name, exist_ok=True, token=args.hub_token
             ).repo_id
+            create_branch(repo_id, branch=args.run_name, revision="main", exist_ok=True)
+
+            
     # Load scheduler, tokenizer and models.
     noise_scheduler = DDPMScheduler.from_pretrained(args.pretrained_model_name_or_path, subfolder="scheduler")
     tokenizer = CLIPTokenizer.from_pretrained(
@@ -402,7 +406,7 @@ def main():
     # We need to initialize the trackers we use, and also store our configuration.
     # The trackers initializes automatically on the main process.
     if accelerator.is_main_process:
-        accelerator.init_trackers("piay", config=vars(args))
+        accelerator.init_trackers("piay", config=vars(args), init_kwargs={"name": args.run_name})
 
     # Train!
     total_batch_size = args.train_batch_size * accelerator.num_processes * args.gradient_accumulation_steps
@@ -604,6 +608,7 @@ def main():
             )
             upload_folder(
                 repo_id=repo_id,
+                revision=args.run_name,
                 folder_path=args.output_dir,
                 commit_message="End of training",
                 ignore_patterns=["step_*", "epoch_*"],

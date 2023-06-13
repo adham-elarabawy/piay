@@ -18,6 +18,12 @@ def parse_args():
         help="Revision of pretrained model identifier from huggingface.co/models.",
     )
     parser.add_argument(
+        "--run_name",
+        type=str,
+        required=True,
+        help="Name of this training run. Used for wandb and HF model checkpoint logging.")
+    
+    parser.add_argument(
         "--dataset_name",
         type=str,
         default=None,

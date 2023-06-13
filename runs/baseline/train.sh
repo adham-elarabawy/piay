@@ -2,6 +2,7 @@ export MODEL_NAME="runwayml/stable-diffusion-v1-5"
 export dataset_name="adhamelarabawy/islamic_art"
 
 accelerate launch --mixed_precision="fp16"  ../../train.py \
+  --run_name="baseline" \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --dataset_name=$dataset_name \
   --resolution=512 --center_crop --random_flip \
