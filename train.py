@@ -319,7 +319,9 @@ def main():
     def tokenize_captions(examples, is_train=True):
         captions = []
         for caption in examples[caption_column]:
-            if isinstance(caption, str):
+            if args.override_caption:
+                captions.append(args.override_caption)
+            elif isinstance(caption, str):
                 captions.append(caption)
             elif isinstance(caption, (list, np.ndarray)):
                 # take a random caption if there are multiple
