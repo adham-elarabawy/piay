@@ -23,7 +23,7 @@ Official Implementation of "Perturbation Is All You Need"
  - gpu_ids: '0'
  - machine_rank: 0
  - main_training_function: main
- - mixed_precision: bf16
+ - mixed_precision: fp16
  - num_machines: 1
  - num_processes: 1
  - rdzv_backend: static
